@@ -19,15 +19,21 @@ import flixel.util.FlxTimer;
 import lime.net.curl.CURLCode;
 import WeekData;
 
+#if (hxCodec >= "3.0.0")
+import hxcodec.flixel.FlxVideo as MP4Handler;
+#elseif (hxCodec == "2.6.1")
+import hxcodec.VideoHandler as MP4Handler;
+#elseif (hxCodec == "2.6.0")
+import VideoHandler as MP4Handler;
+#else
+import vlc.MP4Handler;
+#end
+
 using StringTools;
 
 class StoryMenuState extends MusicBeatState
 {
-	// Wether you have to beat the previous week for playing this one
-	// Not recommended, as people usually download your mod for, you know,
-	// playing just the modded week then delete it.
-	// defaults to True
-	public static var weekCompleted:Map<String, Bool> = new Map<String, Bool>();
+   public static var weekCompleted:Map<String, Bool> = new Map<String, Bool>();
 
 	var scoreText:FlxText;
 
@@ -47,7 +53,7 @@ class StoryMenuState extends MusicBeatState
 
 	var difficultySelectors:FlxGroup;
 	var sprDifficultyGroup:FlxTypedGroup<FlxSprite>;
-	//EXE Menu
+   //EXE Menu
 	var ezbg:FlxSprite;
 
 	var sprDifficulty:FlxSprite;
@@ -69,36 +75,37 @@ class StoryMenuState extends MusicBeatState
 
 	var selection:Bool = false;
 
-	var songArray = ['too-slow', 'you-cant-run', 'triple-trouble'];
+	var songArray = ['too-slow', 'you-cant-run', 'triple-trouble', 'final-escape', 'face-off'];
 
 	var staticscreen:FlxSprite;
 	var portrait:FlxSprite;
 
-
 	override function create()
 	{
-		Paths.clearStoredMemory();
+      Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
-
-		WeekData.reloadWeekFiles(true);
-		if(curWeek >= WeekData.weeksList.length) curWeek = 0;
-		persistentUpdate = persistentDraw = true;
 
 		switch (FlxG.save.data.storyProgress)
 		{
 			case 1:
-				songArray = ['too slow', 'you cant run'];
+				songArray = ['too-slow', 'you-cant-run'];
 			case 2:
-				songArray = ['too slow', 'you cant run', 'triple trouble'];
+				songArray = ['too-slow', 'you-cant-run', 'triple-trouble'];
+                        case 3:
+				songArray = ['too-slow', 'you-cant-run', 'triple-trouble', 'final-escape'];
+                        case 4:
+				songArray = ['too-slow', 'you-cant-run', 'triple-trouble', 'final-escape', 'face-off'];
 		}
 
-		//FlxG.sound.playMusic(Paths.music('storymodemenumusic'));
+		FlxG.sound.playMusic(Paths.music('storymode'));
+
+		Conductor.changeBPM(115);
 
 		var bg:FlxSprite;
 
 		bg = new FlxSprite(0, 0);
-		bg.frames = Paths.getSparrowAtlas('SMMStatic', 'exe');
-		bg.animation.addByPrefix('idlexd', "damfstatic", 24);
+		bg.frames = Paths.getSparrowAtlas('bg');
+		bg.animation.addByPrefix('idlexd', "static", 24);
 		bg.animation.play('idlexd');
 		bg.alpha = 1;
 		bg.antialiasing = true;
@@ -107,7 +114,7 @@ class StoryMenuState extends MusicBeatState
 		add(bg);
 
 		var greyBOX:FlxSprite;
-		greyBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('greybox'));
+		greyBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('story-mode/greybox'));
 		bg.alpha = 1;
 		greyBOX.antialiasing = true;
 		greyBOX.setGraphicSize(Std.int(bg.width));
@@ -123,14 +130,14 @@ class StoryMenuState extends MusicBeatState
 		bfIDLELAWL.animation.play('idleLAWLAW', true);
 		add(bfIDLELAWL);
 
-		portrait = new FlxSprite(450, 79).loadGraphic(Paths.image('fpstuff/too-slow'));
+		portrait = new FlxSprite(450, 79).loadGraphic(Paths.image('story-mode/exe/too-slow'));
 		portrait.setGraphicSize(Std.int(portrait.width * 0.275));
 		portrait.antialiasing = true;
 		portrait.updateHitbox();
 		add(portrait);
 
 		staticscreen = new FlxSprite(450, 0);
-		staticscreen.frames = Paths.getSparrowAtlas('screenstatic', 'exe');
+		staticscreen.frames = Paths.getSparrowAtlas('story-mode/static');
 		staticscreen.animation.addByPrefix('screenstaticANIM', "screenSTATIC", 24);
 		staticscreen.animation.play('screenstaticANIM');
 		staticscreen.y += 79;
@@ -141,14 +148,14 @@ class StoryMenuState extends MusicBeatState
 		add(staticscreen);
 
 		var yellowBOX:FlxSprite;
-		yellowBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('yellowbox'));
+		yellowBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('story-mode/yellowbox'));
 		yellowBOX.alpha = 1;
 		yellowBOX.antialiasing = true;
 		yellowBOX.setGraphicSize(Std.int(bg.width));
 		yellowBOX.updateHitbox();
 		add(yellowBOX);
 
-		redBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('redbox'));
+		redBOX = new FlxSprite(0, 0).loadGraphic(Paths.image('story-mode/redbox'));
 		redBOX.alpha = 1;
 		redBOX.antialiasing = true;
 		redBOX.setGraphicSize(Std.int(bg.width));
@@ -156,16 +163,15 @@ class StoryMenuState extends MusicBeatState
 		add(redBOX);
 
 		sprDifficulty = new FlxSprite(550, 600);
-		sprDifficulty.frames = Paths.getSparrowAtlas('campaign_menu_UI_assets');
+		sprDifficulty.frames = Paths.getSparrowAtlas('story-mode/campaign_menu_UI_assets');
 		sprDifficulty.animation.addByPrefix('easy', 'EASY');
 		sprDifficulty.animation.addByPrefix('normal', 'NORMAL');
 		sprDifficulty.animation.addByPrefix('hard', 'HARD');
-		sprDifficulty.animation.addByPrefix('encore', 'NORMAL');
 		sprDifficulty.animation.play('normal');
 		add(sprDifficulty);
 
 		leftArrow = new FlxSprite(sprDifficulty.x - 150, sprDifficulty.y);
-		leftArrow.frames = Paths.getSparrowAtlas('campaign_menu_UI_assets');
+		leftArrow.frames = Paths.getSparrowAtlas('story-mode/campaign_menu_UI_assets');
 		leftArrow.setGraphicSize(Std.int(leftArrow.width * 0.8));
 		leftArrow.animation.addByPrefix('idle', "arrow left");
 		leftArrow.animation.addByPrefix('press', "arrow push left");
@@ -173,7 +179,7 @@ class StoryMenuState extends MusicBeatState
 		add(leftArrow);
 
 		rightArrow = new FlxSprite(sprDifficulty.x + 230, sprDifficulty.y);
-		rightArrow.frames = Paths.getSparrowAtlas('campaign_menu_UI_assets');
+		rightArrow.frames = Paths.getSparrowAtlas('story-mode/campaign_menu_UI_assets');
 		rightArrow.setGraphicSize(Std.int(rightArrow.width * 0.8));
 		rightArrow.animation.addByPrefix('idle', "arrow right");
 		rightArrow.animation.addByPrefix('press', "arrow push right");
@@ -181,7 +187,7 @@ class StoryMenuState extends MusicBeatState
 		add(rightArrow);
 
 		leftArrow2 = new FlxSprite(325, 136 + 5);
-		leftArrow2.frames = Paths.getSparrowAtlas('campaign_menu_UI_assets_alt');
+		leftArrow2.frames = Paths.getSparrowAtlas('story-mode/campaign_menu_UI_assets_alt');
 		leftArrow2.setGraphicSize(Std.int(leftArrow2.width * 0.8));
 		leftArrow2.animation.addByPrefix('idle', "arrow left");
 		leftArrow2.animation.addByPrefix('press', "arrow push left");
@@ -189,28 +195,33 @@ class StoryMenuState extends MusicBeatState
 		add(leftArrow2);
 
 		rightArrow2 = new FlxSprite(820, 136 + 5);
-		rightArrow2.frames = Paths.getSparrowAtlas('campaign_menu_UI_assets_alt');
+		rightArrow2.frames = Paths.getSparrowAtlas('story-mode/campaign_menu_UI_assets_alt');
 		rightArrow2.setGraphicSize(Std.int(rightArrow2.width * 0.8));
 		rightArrow2.animation.addByPrefix('idle', "arrow right");
 		rightArrow2.animation.addByPrefix('press', "arrow push right");
 		rightArrow2.animation.play('idle');
 		add(rightArrow2);
 
+      #if android addVirtualPad(LEFT_FULL, A_B); #end
+
 		sprDifficulty.offset.x = 70;
 		sprDifficulty.y = leftArrow.y + 10;
 
-                #if mobile addVirtualPad(LEFT_FULL, A_B); #end
-
 		super.create();
 	}
+
+   override function destroy() {
+      FlxG.sound.music.stop();
+      super.destroy();
+   }
 
 	function changediff(diff:Int = 1)
 	{
 		curdiff += diff;
 
 		if (curdiff == 0)
-			curdiff = 4;
-		if (curdiff > 4)
+			curdiff = 3;
+		if (curdiff == 4)
 			curdiff = 1;
 
 		FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -226,9 +237,6 @@ class StoryMenuState extends MusicBeatState
 			case 3:
 				sprDifficulty.animation.play('hard');
 				sprDifficulty.offset.x = 20;
-			case 4:
-				sprDifficulty.animation.play('encore');
-				sprDifficulty.offset.x = 70;
 		}
 		sprDifficulty.alpha = 0;
 		sprDifficulty.y = leftArrow.y - 15;
@@ -247,7 +255,7 @@ class StoryMenuState extends MusicBeatState
 			else if (real > songArray.length - 1)
 				real = 0;
 
-			portrait.loadGraphic(Paths.image('fpstuff/' + songArray[real]));
+			portrait.loadGraphic(Paths.image('story-mode/exe/' + songArray[real]));
 
 			FlxTween.cancelTweensOf(staticscreen);
 			staticscreen.alpha = 1;
@@ -321,31 +329,20 @@ class StoryMenuState extends MusicBeatState
 
 				FlxG.sound.play(Paths.sound('confirmMenu'));
 
-				if (curdiff == 4)
+				if (FlxG.save.data.storyProgress == 0)
+				{
+					PlayState.storyPlaylist = ['too-slow', 'you-cant-run', 'triple-trouble', 'final-escape', 'face-off'];
+					PlayState.isStoryMode = true;
+					switch (curdiff)
 					{
-
-						PlayState.SONG = Song.loadFromJson('too-slow-encore', 'too-slow-encore');
-
-						new FlxTimer().start(1, function(tmr:FlxTimer)
-							{
-								// LoadingState.loadAndSwitchState(new PlayState(), true); //save this code for the cutsceneless build of the game
-								//var video:MP4Handler = new MP4Handler();
-							//	video.playVideo(Paths.video('tooslowcutscene1'));
-							//	video.finishCallback = function()
-								//{
-									LoadingState.loadAndSwitchState(new PlayState());
-								//}
-							});
+						case 1:
+							curDifficulty = '-easy';
+						case 3:
+							curDifficulty = '-hard';
 					}
 
-				else if (FlxG.save.data.storyProgress == 0)
-				{
-					PlayState.storyPlaylist = ['too slow', 'you cant run', 'triple trouble'];
-					PlayState.isStoryMode = true;
-
-
-					curdiff = 3;
-					PlayState.storyDifficulty = curdiff;
+					curdiff -= 1;
+					PlayState.storyDifficulty = FlxG.save.data.storyDiff = curdiff;
 
 					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
 					PlayState.storyWeek = 1;
@@ -353,16 +350,26 @@ class StoryMenuState extends MusicBeatState
 				}
 				else
 				{
-
+					if (songArray[real] == 'too-slow')
+					{
+						switch (curdiff)
+						{
+							case 1:
+								curDifficulty = '-easy';
+							case 3:
+								curDifficulty = '-hard';
+						}
+					}
+					else
 						curDifficulty = '-hard';
 
 					PlayState.SONG = Song.loadFromJson(songArray[real].toLowerCase() + curDifficulty, songArray[real].toLowerCase());
 					PlayState.isStoryMode = false;
 					LoadingState.loadAndSwitchState(new PlayState());
 				}
-				if (songArray[real] == 'you cant run')
+				if (FlxG.save.data.storyProgress == 1 && songArray[real] == 'you-cant-run')
 				{
-					PlayState.storyPlaylist = ['you cant run', 'triple trouble'];
+					PlayState.storyPlaylist = ['you-cant-run', 'triple-trouble', 'final-escape', 'face-off'];
 					PlayState.isStoryMode = true;
 					curDifficulty = '-hard';
 
@@ -371,19 +378,40 @@ class StoryMenuState extends MusicBeatState
 					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
 					PlayState.storyWeek = 1;
 				}
+            if (FlxG.save.data.storyProgress == 2 && songArray[real] == 'triple-trouble')
+				{
+					PlayState.storyPlaylist = ['triple-trouble', 'final-escape', 'face-off'];
+					PlayState.isStoryMode = true;
+					curDifficulty = '-hard';
 
-				if (songArray[real] == 'too slow')
+					PlayState.storyDifficulty = FlxG.save.data.storyDiff = curdiff;
+
+					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
+					PlayState.storyWeek = 1;
+				}
+            if (FlxG.save.data.storyProgress == 3 && songArray[real] == 'final-escape')
+				{
+					PlayState.storyPlaylist = ['final-escape', 'face-off'];
+					PlayState.isStoryMode = true;
+					curDifficulty = '-hard';
+
+					PlayState.storyDifficulty = FlxG.save.data.storyDiff = curdiff;
+
+					PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + curDifficulty, PlayState.storyPlaylist[0].toLowerCase());
+					PlayState.storyWeek = 1;
+				}
+				if (songArray[real] == 'too-slow')
 				{
 					new FlxTimer().start(1, function(tmr:FlxTimer)
+					{
+						// LoadingState.loadAndSwitchState(new PlayState(), true); //save this code for the cutsceneless build of the game
+						var video:MP4Handler = new MP4Handler();
+						video.playVideo(Paths.video('tooslowcutscene1'));
+						video.finishCallback = function()
 						{
-							// LoadingState.loadAndSwitchState(new PlayState(), true); //save this code for the cutsceneless build of the game
-							//var video:MP4Handler = new MP4Handler();
-						//	video.playVideo(Paths.video('tooslowcutscene1'));
-						//	video.finishCallback = function()
-							//{
-								LoadingState.loadAndSwitchState(new PlayState());
-							//}
-						});
+							LoadingState.loadAndSwitchState(new PlayState());
+						}
+					});
 				}
 			}
 

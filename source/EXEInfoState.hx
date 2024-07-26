@@ -1,51 +1,78 @@
 package;
 
-import flixel.util.FlxTimer;
-import flixel.input.gamepad.FlxGamepad;
-import flash.text.TextField;
-import flixel.FlxG;
+import flixel.graphics.FlxGraphic;
+import sys.FileSystem;
+#if windows
+import Discord.DiscordClient;
+import sys.thread.Thread;
+#end
 import flixel.FlxSprite;
-import flixel.addons.display.FlxGridOverlay;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
-import flixel.addons.transition.FlxTransitionableState;
-import flixel.math.FlxMath;
-import flixel.text.FlxText;
+import flixel.FlxG;
+import flixel.FlxState;
 import flixel.util.FlxColor;
-import flixel.tweens.FlxEase;
+import flixel.util.FlxTimer;
 import flixel.tweens.FlxTween;
-import lime.utils.Assets;
+import flixel.util.FlxSave;
+import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.system.FlxSound;
+import lime.app.Application;
+import openfl.Assets;
 
 using StringTools;
 
 class EXEInfoState extends MusicBeatState
 {
+   var sonicWarn:FlxSprite;
+   var discl:FlxSprite;
+   private var Confirm:FlxSound;
 
-	public static var talk:FlxText;
+   override function create()
+   {
+        discl = new FlxSprite().loadGraphic(Paths.image('warnings/disclaimer/main'));
+	discl.screenCenter();
+	discl.setGraphicSize(1280, 720);
+        discl.alpha = 0;
+	add(discl);
+ 
+        Confirm = FlxG.sound.play(Paths.sound('confirmMenu'));
 
-	override function create()
-	{
-		talk = new FlxText();
-		talk.text = "I wish I could've made a bigger impact to this team.\nI really did kinda feel like a wasted slot, everyone else around me being much more skilled and whatnot.\nI do miss the team, I miss the progress it made. I miss it a lot.\nTeam did feel like a family, despite everything that happened.\nI figured a message like this would appear from someone like me in this state,\nconsidering its the one that people went after me for.\nThe story portraits were not by divide, they were by scorch, only triple trouble's portrait had a concept by divide.\nRegardless, if I had known divide had a hand in their creation, i wouldnt had laid a finger on them. I am beyond sorry.\nI hope exe finally falls and rots like it should.\nRest in peace to the dream that was exe mod, and let anything that tries to recreate it, rot. just like the real mod.\n \n-DuskieWhy";
-		talk.alignment = CENTER;
-		talk.scale.set(2.3,2.3);
-		talk.updateHitbox();
-		talk.screenCenter();
-		add(talk);
+	sonicWarn = new FlxSprite(-100, -600);
+	sonicWarn.frames = Paths.getSparrowAtlas('warnings/disclaimer/sonic');
+	sonicWarn.animation.addByPrefix('idle', "idle", 22);
+	sonicWarn.animation.play('idle');
+	sonicWarn.alpha = 0;
+	sonicWarn.scale.x = 2;
+	sonicWarn.scale.y = 2;
+	sonicWarn.antialiasing = true;
+	sonicWarn.updateHitbox();
+        add(sonicWarn);
 
-    #if mobile
-    addVirtualPad(NONE, A);
-    #end
+        #if windows
+	    DiscordClient.changePresence("In the Disclaimer Menu", null);
+        #end
+
+       FlxTween.tween(sonicWarn, {alpha: 1}, 2.25);
+       FlxTween.tween(discl, {alpha: 1}, 2.25);
+
+       #if android
+          addVirtualPad(NONE, A);
+       #end
 
 		super.create();
 	}
-	
 
+   private function timerComplete(timer:FlxTimer):Void {
+       MusicBeatState.switchState(new MainMenuState());
+   }
+	
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
+	    super.update(elapsed);
 
-		if(controls.ACCEPT)
-			MusicBeatState.switchState(new MainMenuState());
+            if(controls.ACCEPT)
+                FlxTween.tween(sonicWarn, {alpha: 0}, 2.5);
+                FlxTween.tween(discl, {alpha: 0}, 2.5);
+                Confirm.play();
+                new FlxTimer().start(2.5, timerComplete);
 	}
 }

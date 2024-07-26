@@ -43,7 +43,7 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 
 	var boxgrp:SkewSpriteGroup;
 
-	var bg:FlxSprite;
+	var bg:FlxBackdrop;
 	
 	var scrollingBg:FlxBackdrop;
 
@@ -59,6 +59,11 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 
 	private static var vocals:FlxSound = null;
 
+   override function destroy()
+   {
+      FlxG.sound.music.stop();
+      super.destroy();
+ }
 
 	override function create()
 	{
@@ -68,20 +73,22 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 		
 		CharSongList.init();
 
+                FlxG.sound.playMusic(Paths.music('freeplaymode'));
+
+		Conductor.changeBPM(132);
 
 		//charArray = CharSongList.chars;
 
 		whiteshit = new FlxSprite().makeGraphic(1280, 720, FlxColor.WHITE);
 		whiteshit.alpha = 0;
 
-		bg = new FlxSprite().loadGraphic(Paths.image('backgroundlool'));
+		bg = new FlxBackdrop(Paths.image('freeplay-encore/backgroundlool'), 1, 0, true, false);
 		bg.screenCenter();
 		bg.setGraphicSize(1280, 720);
 		add(bg);
 
-		scrollingBg = new FlxBackdrop(Paths.image('sidebar'), 0, 1, false, true);
+		scrollingBg = new FlxBackdrop(Paths.image('freeplay-encore/sidebar'), 0, 1, false, true);
 		add(scrollingBg);
-
 
 		textgrp = new FlxTypedGroup<FlxText>();
 
@@ -91,27 +98,25 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 
 		charUnlocked = CharSongList.characters;
 
-
-
 		for (i in 0...charArray.length)
 		{
 			if (charArray.contains(charArray[i])) // Hey so this is uneeded but it's here lol.
 			{
 				var box:FlxSkewedSprite = new FlxSkewedSprite(0, i * 415);
-				box.loadGraphic(Paths.image('FreeBox'));
+				box.loadGraphic(Paths.image('freeplay-encore/FreeBox'));
 				boxgrp.add(box);
 				box.ID = i;
 				box.setGraphicSize(Std.int(box.width / 1.7));
 
-				FlxG.log.add('searching for ' + 'assets/images/fpstuff/' + charArray[i].toLowerCase() + '.png');
+				FlxG.log.add('searching for ' + 'assets/images/freeplay-encore/freeplay/' + charArray[i].toLowerCase() + '.png');
 
 				if (charUnlocked.contains(charArray[i]))
 				{
-					if (OpenFlAssets.exists('assets/images/fpstuff/' + charArray[i].toLowerCase() + '.png'))
+					if (OpenFlAssets.exists('assets/images/freeplay-encore/freeplay/' + charArray[i].toLowerCase() + '.png'))
 					{
 						FlxG.log.add(charArray[i] + ' found');
 						var char:FlxSkewedSprite = new FlxSkewedSprite(0, i * 415);
-						char.loadGraphic(Paths.image('fpstuff/' + charArray[i].toLowerCase()));
+						char.loadGraphic(Paths.image('freeplay-encore/freeplay/' + charArray[i].toLowerCase()));
 						boxgrp.add(char);
 						char.ID = i;
 						char.setGraphicSize(Std.int(box.width / 1.7));
@@ -119,7 +124,7 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 					else
 					{
 						var char:FlxSkewedSprite = new FlxSkewedSprite(0, i * 415);
-						char.loadGraphic(Paths.image('fpstuff/placeholder'));
+						char.loadGraphic(Paths.image('freeplay-encore/freeplay/placeholder'));
 						boxgrp.add(char);
 						char.ID = i;
 						char.setGraphicSize(Std.int(box.width / 1.7));
@@ -128,10 +133,16 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 				else
 				{
 					var char:FlxSkewedSprite = new FlxSkewedSprite(0, i * 415);
-					char.loadGraphic(Paths.image('fpstuff/locked'));
+					char.loadGraphic(Paths.image('freeplay-encore/freeplay/locked'));
 					boxgrp.add(char);
 					char.ID = i;
 					char.setGraphicSize(Std.int(box.width / 1.7));
+
+               var box:FlxSkewedSprite = new FlxSkewedSprite(0, i * 415);
+				   box.loadGraphic(Paths.image('freeplay-encore/GrayBox'));
+				   boxgrp.add(box);
+			   	box.ID = i;
+			   	box.setGraphicSize(Std.int(box.width / 1.7));
 				}
 
 			}
@@ -196,7 +207,7 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 
 		add(whiteshit);
 
-                #if mobile addVirtualPad(UP_DOWN, A_B); #end
+                #if android addVirtualPad(UP_DOWN, A_B); #end
 
 		super.create();
 	}
@@ -204,6 +215,7 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 	{
 
 		scrollingBg.y += 1;
+		bg.x -= 1;
 
 		super.update(elapsed);
 
@@ -400,9 +412,68 @@ class FreeplayState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!
 							switch(charArray[curSelected])
 							{
 								case "hog":
-									if (curSongSelected == 1) thing.loadGraphic(Paths.image('fpstuff/scorched'));
-									else thing.loadGraphic(Paths.image('fpstuff/hog'));
-								default: thing.loadGraphic(Paths.image('fpstuff/' + charArray[curSelected]));
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/scorched'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/hog'));
+									
+								case "xterion":
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/substantial'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/xterion'));
+
+                case "tails doll":
+                	if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/soulless'));
+                	else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/tails doll'));
+
+								case "apollyon":
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/apollyon-p3'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/apollyon'));
+									
+								case "chaotix":
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/horizon'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/chaotix'));
+									
+								case "lord x":
+									if (curSongSelected == 2) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/hellbent'));
+								  else if (curSongSelected == 0) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/execution'));
+									else if (curSongSelected == 3) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/fate'));
+									else if (curSongSelected == 4) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/judgement'));
+									else if (curSongSelected == 5) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/guardians'));
+
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/lord x'));
+								
+								case "starved":
+								  if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/starved'));
+								  else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/furnace'));
+								  
+                case "faker":
+                  if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/black-sun'));
+                 	else if (curSongSelected == 2) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/godspeed'));
+                  else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/faker'));
+
+                case "grimeware":
+                	if (curSongSelected == 0) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/decayed'));
+                 	else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/grimeware'));
+                 	
+                case "majin":
+                	if (curSongSelected == 4) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/endeavors'));
+
+                case "demogri and griatos":
+                 	if (curSongSelected == 0) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/demogri'));
+                	else if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/griatos'));
+                  else thing.loadGraphic(Paths.image('freeplay-encore/freplay/demogri and griatos'));
+                  
+                case "needlemouse":
+                	if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/roundabout'));
+                	else if (curSongSelected == 2) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/spike-trap'));
+                	else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/needlemouse'));
+								
+								case "melthog":
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/confronting'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/melthog'));
+								case "fatal error":
+									if (curSongSelected == 1) thing.loadGraphic(Paths.image('freeplay-encore/freeplay/critical-error'));
+									else thing.loadGraphic(Paths.image('freeplay-encore/freeplay/fatal error'));
+								
+								default: thing.loadGraphic(Paths.image('freeplay-encore/freeplay' + charArray[curSelected]));
 							}
 						}
 					});

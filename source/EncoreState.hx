@@ -15,7 +15,7 @@ import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import lime.utils.Assets;
-
+import flixel.system.FlxSound;
 
 #if windows
 import Discord.DiscordClient;
@@ -29,7 +29,7 @@ class EncoreState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!!!
 
 	var curSelected:Int = 0;
 
-	var songArray:Array<String> = ["too-slow-encore", "you-cant-run-encore", "triple-trouble-encore"];
+	var songArray:Array<String> = ["too slow encore", "you cant run encore", "triple trouble encore", 'endless encore', 'cycles encore', 'sunshine encore', 'chaos encore', 'faker-encore', 'round a bout encore', 'her world encore', 'hollow-encore', 'color blind encore'];
 
 	var boxgrp:FlxTypedSpriteGroup<FlxSprite>;
 
@@ -42,11 +42,19 @@ class EncoreState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!!!
 	var songtext:FlxText;
 	var prevsongtext:FlxText;
 
+        override public function destroy() {
+            FlxG.sound.music.stop();
+            super.destroy();
+        }
+
 	override function create()
 	{
-		
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
+
+               	FlxG.sound.playMusic(Paths.music('encoremode'));
+
+		Conductor.changeBPM(142);
 		
 		whiteshit = new FlxSprite().makeGraphic(1280, 720, FlxColor.WHITE);
 		whiteshit.alpha = 0;
@@ -98,7 +106,7 @@ class EncoreState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!!!
 
 		add(whiteshit);
 
-                #if mobile addVirtualPad(LEFT_RIGHT, A_B); #end
+                #if android addVirtualPad(LEFT_RIGHT, A_B); #end
 
 		super.create();
 	}
@@ -149,14 +157,32 @@ class EncoreState extends MusicBeatState // REWRITE FREEPLAY!?!?!? HELL YEA!!!!!
 
 			switch (songArray[curSelected]) // Some charts don't include -hard in their file name so i decided to get focken lazy.
 			{
-          case "too-slow-encore":
+          case "too slow encore":
 					PlayState.SONG = Song.loadFromJson('too-slow-encore', 'too-slow-encore');
-          case "you-cant-run-encore":
+          case "you cant run encore":
 					PlayState.SONG = Song.loadFromJson('you-cant-run-encore', 'you-cant-run-encore');
-          case "triple-trouble-encore":
+          case "triple trouble encore":
 					PlayState.SONG = Song.loadFromJson('triple-trouble-encore', 'triple-trouble-encore');
+	  case "endless encore":
+					PlayState.SONG = Song.loadFromJson('endless-encore', 'endless-encore');
+	  case "cycles encore":
+					PlayState.SONG = Song.loadFromJson('cycles-encore', 'cycles-encore');
+	  case "sunshine encore":
+					PlayState.SONG = Song.loadFromJson('sunshine-encore', 'sunshine-encore');
+	  case "chaos encore":
+					PlayState.SONG = Song.loadFromJson('chaos-encore', 'chaos-encore');
+	  case "round a bout encore":
+					PlayState.SONG = Song.loadFromJson('round-a-bout-encore', 'round-a-bout-encore');
+	  case "her world encore":
+					PlayState.SONG = Song.loadFromJson('her-world-encore', 'her-world-encore');
+	  case "color blind encore":
+					PlayState.SONG = Song.loadFromJson('color-blind-encore', 'color-blind-encore');
+	  case "faker encore":
+					PlayState.SONG = Song.loadFromJson('faker-encore', 'faker-encore');
+	  case "hollow encore":
+					PlayState.SONG = Song.loadFromJson('hollow-encore', 'hollow-encore');
 				default:
-					PlayState.SONG = Song.loadFromJson(songArray[curSelected].toLowerCase() + '-hard', songArray[curSelected].toLowerCase());
+					PlayState.SONG = Song.loadFromJson(songArray[curSelected].toLowerCase(), songArray[curSelected].toLowerCase());
 			}
 
 			PlayState.isStoryMode = false;

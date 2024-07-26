@@ -8,6 +8,7 @@ import llua.State;
 import llua.Convert;
 #end
 
+import Controls.Control;
 import animateatlas.AtlasFrameMaker;
 import flixel.FlxG;
 import flixel.addons.effects.FlxTrail;
@@ -33,7 +34,6 @@ import flixel.math.FlxMath;
 import flixel.util.FlxSave;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.system.FlxAssets.FlxShader;
-import Controls.Control;
 
 #if (!flash && sys)
 import flixel.addons.display.FlxRuntimeShader;
@@ -176,8 +176,8 @@ class FunkinLua {
 		set('healthLossMult', PlayState.instance.healthLoss);
 		set('playbackRate', PlayState.instance.playbackRate);
 		set('instakillOnMiss', PlayState.instance.instakillOnMiss);
-		set('botPlay', PlayState.instance.cpuControlled);
-		set('practice', PlayState.instance.practiceMode);
+		set('botPlay', PlayState.cpuControlled);
+		set('practice', PlayState.practiceMode);
 
 		for (i in 0...4) {
 			set('defaultPlayerStrumX' + i, 0);
@@ -212,7 +212,8 @@ class FunkinLua {
 		set('noteOffset', ClientPrefs.noteOffset);
 		set('healthBarAlpha', ClientPrefs.healthBarAlpha);
 		set('noResetButton', ClientPrefs.noReset);
-		set('lowQuality', ClientPrefs.lowQuality);
+		set('Optimization', ClientPrefs.Optimization);
+      set('PotatoOptimization', ClientPrefs.PotatoOptimization);
 		set('shadersEnabled', ClientPrefs.shaders);
 		set('scriptName', scriptName);
 		set('currentModDirectory', Paths.currentModDirectory);
@@ -1471,7 +1472,16 @@ class FunkinLua {
 				case 'right': key = PlayState.instance.getControl('NOTE_RIGHT_P');
 				case 'accept': key = PlayState.instance.getControl('ACCEPT');
 				case 'back': key = PlayState.instance.getControl('BACK');
-				case 'pause': key = PlayState.instance.getControl('PAUSE');
+				#if desktop
+		                case 'pause': key = PlayState.instance.getControl('PAUSE');
+				#end
+				#if android
+			   case 'pause': key = FlxG.android.justReleased.BACK;
+				case 'VPadUp' : key = PlayState.instance.getControl('UI_UP_P');
+				case 'VPadDown' : key = PlayState.instance.getControl('UI_DOWN_P');
+				case 'VPadLeft' : key = PlayState.instance.getControl('UI_LEFT_P');
+				case 'VPadRight' : key = PlayState.instance.getControl('UI_RIGHT_P');
+				#end
 				case 'reset': key = PlayState.instance.getControl('RESET');
 				case 'space': key = FlxG.keys.justPressed.SPACE;//an extra key for convinience
 			}
@@ -1484,6 +1494,12 @@ class FunkinLua {
 				case 'down': key = PlayState.instance.getControl('NOTE_DOWN');
 				case 'up': key = PlayState.instance.getControl('NOTE_UP');
 				case 'right': key = PlayState.instance.getControl('NOTE_RIGHT');
+				#if android
+				case 'VPadUp' : key = PlayState.instance.getControl('UI_UP_P');
+				case 'VPadDown' : key = PlayState.instance.getControl('UI_DOWN_P');
+				case 'VPadLeft' : key = PlayState.instance.getControl('UI_LEFT_P');
+				case 'VPadRight' : key = PlayState.instance.getControl('UI_RIGHT_P');
+				#end
 				case 'space': key = FlxG.keys.pressed.SPACE;//an extra key for convinience
 			}
 			return key;
@@ -1495,6 +1511,9 @@ class FunkinLua {
 				case 'down': key = PlayState.instance.getControl('NOTE_DOWN_R');
 				case 'up': key = PlayState.instance.getControl('NOTE_UP_R');
 				case 'right': key = PlayState.instance.getControl('NOTE_RIGHT_R');
+				#if android
+			        case 'pause': key = FlxG.android.justReleased.BACK;
+				#end
 				case 'space': key = FlxG.keys.justReleased.SPACE;//an extra key for convinience
 			}
 			return key;
@@ -3346,6 +3365,10 @@ class CustomSubstate extends MusicBeatSubstate
 
 		PlayState.instance.callOnLuas('onCustomSubstateCreate', [name]);
 		super.create();
+		#if android
+		  addVirtualPad(NONE, A_B);
+		  addVirtualPadCamera();
+		#end
 		PlayState.instance.callOnLuas('onCustomSubstateCreatePost', [name]);
 	}
 	
