@@ -468,9 +468,10 @@ class PreferencesSubstate extends MusicBeatSubstate
 
 	static var options:Array<String> = [
 		'GRAPHICS',
-		'Low Quality',
+		'Optimization',
+		'Potato Optimization', 
 		'Anti-Aliasing',
-    'Shaders',
+                'Shaders',
 		'Persistent Cached Data',
 		'Gore',
 		'Improved Hold Renderer',
@@ -638,10 +639,12 @@ class PreferencesSubstate extends MusicBeatSubstate
 						if(Main.fpsVar != null)
 							Main.fpsVar.visible = ClientPrefs.showFPS;
 
-					case 'Low Quality':
-						ClientPrefs.lowQuality = !ClientPrefs.lowQuality;
+					case 'Optimization':
+						ClientPrefs.Optimization = !ClientPrefs.Optimization;
+					case 'Potato Optimization':
+						ClientPrefs.PotatoOptimization = !ClientPrefs.PotatoOptimization;
                     
-                    case 'Anti-Aliasing':
+                                        case 'Anti-Aliasing':
 						ClientPrefs.globalAntialiasing = !ClientPrefs.globalAntialiasing;
 						showCharacter.antialiasing = ClientPrefs.globalAntialiasing;
 						for (item in grpOptions) {
@@ -774,8 +777,10 @@ class PreferencesSubstate extends MusicBeatSubstate
 				daText = "Changes how late a note is spawned.\nUseful for preventing audio lag from wireless earphones.";
 			case 'FPS Counter':
 				daText = "If unchecked, hides FPS Counter.";
-			case 'Low Quality':
+			case 'Optimization':
 				daText = "If checked, disables some background details,\ndecreases loading times and improves performance.";
+			case 'Potato Optimization':
+				daText = "If your device performance like a potato,\nyou can check it to remove little big bg sprites.";
 			case 'Persistent Cached Data':
 				daText = "If checked, images loaded will stay in memory\nuntil the game is closed, this increases memory usage,\nbut basically makes reloading times instant.";
 			case 'Anti-Aliasing':
@@ -858,8 +863,10 @@ class PreferencesSubstate extends MusicBeatSubstate
                         daValue = ClientPrefs.shaders;
 					case 'FPS Counter':
 						daValue = ClientPrefs.showFPS;
-					case 'Low Quality':
-						daValue = ClientPrefs.lowQuality;
+					case 'Optimization':
+						daValue = ClientPrefs.Optimization;
+					case 'Potato Optimization':
+						daValue = ClientPrefs.PotatoOptimization;
 					case 'Anti-Aliasing':
 						daValue = ClientPrefs.globalAntialiasing;
 					case 'Note Splashes':
