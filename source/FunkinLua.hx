@@ -9,7 +9,7 @@ import llua.Convert;
 #end
 
 import Controls.Control;
-import animateatlas.AtlasFrameMaker;
+import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.FlxG;
 import flixel.addons.effects.FlxTrail;
 import flixel.input.keyboard.FlxKey;
