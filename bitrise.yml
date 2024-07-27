@@ -1,0 +1,127 @@
+format_version: '8'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+project_type: android
+
+workflows:
+  build_android:
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+      - git-clone@8: {}
+      - script@1:
+          title: Setup Android NDK
+          inputs:
+            - content: |-
+                echo "Downloading Android NDK..."
+                wget "https://dl.google.com/android/repository/android-ndk-r25c-linux.zip" -O android_ndk.zip
+                if [ $? -ne 0 ]; then
+                  echo "Error downloading Android NDK"
+                  exit 1
+                fi
+                echo "Unpacking Android NDK..."
+                mkdir -p $HOME/android-ndk
+                unzip android_ndk.zip -d $HOME/android-ndk
+                if [ $? -ne 0 ]; then
+                  echo "Error unpacking Android NDK"
+                  ls -l android_ndk.zip  # Проверка, существует ли файл
+                  exit 1
+                fi
+                echo "Android NDK setup completed"
+                echo "export ANDROID_NDK_HOME=$HOME/android-ndk/android-ndk-r25c" >> $BASH_ENV
+                source $BASH_ENV
+      - script@1:
+          title: Setup Java JDK
+          inputs:
+            - content: |-
+                sudo apt-get update -y
+                sudo apt-get install -y openjdk-18-jdk
+                sudo update-alternatives --set java /usr/lib/jvm/java-18-openjdk-amd64/bin/java
+                echo "export JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64" >> $BASH_ENV
+                source $BASH_ENV
+      - script@1:
+          title: Setup Android SDK
+          inputs:
+            - content: |-
+                wget "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip" -O android_tools.zip
+                mkdir -p $HOME/android-sdk/cmdline-tools
+                unzip android_tools.zip -d $HOME/android-sdk/cmdline-tools
+                yes | $HOME/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager --licenses
+                $HOME/android-sdk/cmdline-tools/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;34.0.0" "platforms;android-19"
+                echo "export ANDROID_HOME=$HOME/android-sdk" >> $BASH_ENV
+                echo "export ANDROID_SDK_ROOT=$HOME/android-sdk" >> $BASH_ENV
+                echo "export PATH=$PATH:$HOME/android-sdk/platform-tools" >> $BASH_ENV
+                source $BASH_ENV
+      - script@1:
+          title: Setup Clang++
+          inputs:
+            - content: |-
+                sudo apt-get install -y clang
+                sudo apt-get install -y clang++-10
+                sudo apt-get install -y libc++-dev libc++abi-dev
+                sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+                clang++ --version
+      - script@1:
+          title: Setup Haxe
+          inputs:
+            - content: |-
+                npm install -g lix
+                lix download haxe 4.2.5
+                lix use haxe 4.2.5
+      - script@1:
+          title: Install Haxelib dependencies
+          inputs:
+            - content: |-
+                haxelib setup ~/haxelib
+                haxelib install hxcpp 4.2.1 > /dev/null
+                haxelib install lime 7.9.0
+                haxelib install openfl 9.2.0
+                haxelib --never install flixel 4.11.0
+                haxelib run lime setup flixel
+                haxelib install flixel-tools
+                haxelib install flixel-ui
+                haxelib install flixel-addons 2.11.0
+                haxelib install tjson
+                haxelib install hxjsonast
+                haxelib install hscript
+                haxelib install hxCodec 2.6.1
+                haxelib git hxcpp https://github.com/mcagabe19-stuff/hxcpp.git
+                haxelib git linc_luajit https://github.com/superpowers04/linc_luajit.git
+                haxelib git extension-androidtools https://github.com/Edger228/androidtools.git
+                haxelib install hxcpp-debug-server
+                haxelib list
+      - script@1:
+          title: Create Version Tag
+          inputs:
+            - content: |-
+                echo "${BITRISE_BUILD_NUMBER}" > VERSION
+      - script@1:
+          title: Setup Lime
+          inputs:
+            - content: |-
+                haxelib run lime setup -alias -y
+                haxelib run lime config ANDROID_SDK $ANDROID_HOME
+                haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_HOME
+                haxelib run lime config JAVA_HOME $JAVA_HOME
+                haxelib run lime config ANDROID_SETUP true
+                haxelib set lime 7.9.0
+                haxelib set openfl 9.2.0
+                haxelib set flixel 4.11.0
+                haxelib set flixel-addons 2.11.0
+                haxelib set hxCodec 2.6.1
+          env:
+            ANDROID_NDK_HOME: $HOME/android-ndk/android-ndk-r25c
+      - script@1:
+          title: Compile Haxe Project
+          inputs:
+            - content: |-
+                haxelib run lime build android -D NO_PRECOMPILED_HEADERS --app-version="4.0.0-${BITRISE_BUILD_NUMBER}"
+      - script@1:
+          title: Find APK
+          inputs:
+            - content: |-
+                echo "Looking for APK files..."
+                find $BITRISE_SOURCE_DIR -name "*.apk"
+      - deploy-to-bitrise-io@1:
+          inputs:
+            - deploy_path: "/bitrise/src/export/release/android/bin/app/build/outputs/apk/debug/Sonic-debug.apk"
