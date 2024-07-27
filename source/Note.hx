@@ -140,28 +140,34 @@ class Note extends FlxSprite
 					ignoreNote=true;
 					hitCausesMiss=true;
 					noteSplashDisabled=true;
-				case 'Hurt Note':
+			  case 'Hurt Note':
 					ignoreNote = mustPress;
 					reloadNote('HURT');
 					noteSplashTexture = 'HURTnoteSplashes';
-					colorSwap.hue = 0;
-					colorSwap.saturation = 0;
-					colorSwap.brightness = 0;
-					lowPriority = true;
-
 					if(isSustainNote) {
 						missHealth = 0.1;
 					} else {
 						missHealth = 0.3;
 					}
 					hitCausesMiss = true;
-				case 'Alt Animation':
-					animSuffix = '-alt';
-				case 'No Animation':
+					hitbox *= 0.67;
+			  case 'No Animation':
 					noAnimation = true;
-					noMissAnimation = true;
-				case 'GF Sing':
-					gfNote = true;
+			  case 'Static Note':
+					reloadNote('STATIC');
+			  case 'Majin Note':
+					reloadNote('MAJIN');
+					noteSplashTexture = 'endlessNoteSplashes';
+			  case 'Pixel Note':
+					isPixelNote = true;
+					reloadNote('');
+			  case 'Phantom Note':
+					hitbox *= 0.5;
+					reloadNote('PHANTOM');
+					ignoreNote = true;
+					hitCausesMiss = true;
+					noteSplashDisabled = true; // I FUCKING HATE THIS PLEASE TURN IT OFF AAAAAAAAAAA
+					// noteSplashTexture = 'HURTnoteSplashes';
 			}
 			noteType = value;
 		}
