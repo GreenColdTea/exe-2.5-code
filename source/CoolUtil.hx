@@ -38,6 +38,13 @@ class CoolUtil
 		return difficultyStuff[PlayState.storyDifficulty][0].toUpperCase();
 	}
 
+	public static function getSavePath(folder:String = 'Merphi'):String {
+		@:privateAccess
+		return #if (flixel < "5.0.0") folder #else FlxG.stage.application.meta.get('company')
+			+ '/'
+			+ FlxSave.validate(FlxG.stage.application.meta.get('file')) #end;
+	}
+
 	public static function rotate(x:Float, y:Float, angle:Float, ?point:FlxPoint):FlxPoint{
 		var p = point==null?FlxPoint.get():point;
 		p.set(
