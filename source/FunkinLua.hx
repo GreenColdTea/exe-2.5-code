@@ -11,6 +11,7 @@ import llua.Convert;
 import Controls.Control;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.FlxG;
+import animateatlas.AtlasFrameMaker;
 import flixel.addons.effects.FlxTrail;
 import flixel.input.keyboard.FlxKey;
 import flixel.tweens.FlxTween;
